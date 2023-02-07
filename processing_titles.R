@@ -14,11 +14,11 @@ data_computrabajo <- as_tibble(read.csv("datasets/Computrabajo/computrabajo_2023
 
 #Lee y procesa los títulos las vacantes de elempleo en un dataframe
 
-data_elempleo <- as_tibble(read.csv("datasets/Elempleo/elempleo_2023-02-01T19-39-03.csv")) %>%
-  select(titulo) 
+# data_elempleo <- as_tibble(read.csv("datasets/Elempleo/elempleo_2023-02-01T19-39-03.csv")) %>%
+#   select(titulo) 
 # View(data_elempleo)
 
-#Concatena los dos dataframes
+#Se selecciona las primeras 20 ofertas para trabajar
 
 data <- data_computrabajo[1:20,] %>%
   mutate(tokenized_title = lapply(titulo, text_processing))
@@ -28,7 +28,7 @@ n_records <- dim(data)[1]
 
 
 #Lee las denominaciones de los trabajos y los guarda en un dataframe
-path.denominations <- "base_cuoc/20220829 Base CUOC Vs 2022.xlsx"
+path.denominations <- "base_cuoc/cuoc.xlsx"
 denominations <- read_excel(path.denominations, sheet = "Denominación") %>%
   mutate(denominaciones = lapply(`Nombre Denominación`, text_processing))
 names <- denominations$`denominaciones` #Extrae los nombres de las denominaciones
@@ -42,7 +42,8 @@ corpus <- Corpus(VectorSource(c(data$tokenized_title[1:n_jobs], names))) #Concat
 corpus <- tm_map(corpus, stemDocument)
 
 dtm <- as.matrix(DocumentTermMatrix(corpus))#Regresa una matriz que contiene los vectores numéricos de ofertas y denominaciones
-
+dtm <- str_replace_all(dtm, "[^01 ]","1")
+View(dtm)
 
 #Se separan dataframes de vectores y ofertas y denominaciones
 offer_vectors <- as.data.frame(dtm[1:n_jobs,])
